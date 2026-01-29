@@ -6,8 +6,8 @@ export function getLists(_req: Request, res: Response<ListsBody>) {
   res.send(mockedState);
 }
 
-export function createList(req: Request, res: Response<ListsBody>) {
-  const newList = req.body as ListType;
+export function createList(req: Request<{}, {}, ListType>, res: Response<ListsBody>) {
+  const newList = req.body;
 
   res.send({
     ...mockedState,
@@ -23,8 +23,8 @@ export function createList(req: Request, res: Response<ListsBody>) {
   });
 }
 
-export function updateList(req: Request, res: Response<ListsBody>) {
-  const updatedList = req.body as ListType;
+export function updateList(req: Request<{}, {}, ListType>, res: Response<ListsBody>) {
+  const updatedList = req.body;
 
   res.send({
     ...mockedState,
