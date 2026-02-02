@@ -1,12 +1,12 @@
-import type { Request, Response } from 'express';
-import type { ListsBody, ListType } from '../types/list.ts';
+import type { Request } from 'express';
+import type { ListsRequest, ListsResponse } from '../types/list.ts';
 import { mockedState } from '../mocks/mocks.ts';
 
-export function getLists(_req: Request, res: Response<ListsBody>) {
+export function getLists(_req: Request, res: ListsResponse) {
   res.send(mockedState);
 }
 
-export function createList(req: Request<{}, {}, ListType>, res: Response<ListsBody>) {
+export function createList(req: ListsRequest, res: ListsResponse) {
   const newList = req.body;
 
   res.send({
@@ -23,7 +23,7 @@ export function createList(req: Request<{}, {}, ListType>, res: Response<ListsBo
   });
 }
 
-export function updateList(req: Request<{}, {}, ListType>, res: Response<ListsBody>) {
+export function updateList(req: ListsRequest, res: ListsResponse) {
   const updatedList = req.body;
 
   res.send({
