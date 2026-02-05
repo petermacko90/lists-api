@@ -1,41 +1,31 @@
-import type { Request } from 'express';
-import type { ListsRequest, ListsResponse } from '../types/list.ts';
-import { mockedState } from '../mocks/mocks.ts';
+import type { Request, Response } from 'express';
+import { drizzle } from 'drizzle-orm/libsql';
+import { listsTable } from '../db/schema.ts';
+import { eq } from 'drizzle-orm';
+import type { ListCreateRequest, ListUpdateRequest } from '../models/models.ts';
 
-export function getLists(_req: Request, res: ListsResponse) {
-  res.send(mockedState);
+const db = drizzle(process.env.DB_FILE_NAME!);
+
+export async function getLists(_req: Request, res: Response) {
+  const lists = await db.select().from(listsTable);
+  res.send(lists);
 }
 
-export function createList(req: ListsRequest, res: ListsResponse) {
-  const newList = req.body;
+export async function createList(req: ListCreateRequest, res: Response) {
+  const list = await db
+    .insert(listsTable)
+    .values({ title: req.body.title })
+    .returning();
 
-  res.send({
-    ...mockedState,
-    lists: {
-      ...mockedState.lists,
-      [newList.id]: {
-        id: newList.id,
-        title: newList.title,
-        modified: newList.modified,
-        itemsIds: newList.itemsIds,
-      },
-    },
-  });
+  res.send(list[0]);
 }
 
-export function updateList(req: ListsRequest, res: ListsResponse) {
-  const updatedList = req.body;
+export async function updateList(req: ListUpdateRequest, res: Response) {
+  const list = await db
+    .update(listsTable)
+    .set({ title: req.body.title })
+    .where(eq(listsTable.id, req.body.id))
+    .returning();
 
-  res.send({
-    ...mockedState,
-    lists: {
-      ...mockedState.lists,
-      [updatedList.id]: {
-        id: updatedList.id,
-        title: updatedList.title,
-        modified: updatedList.modified,
-        itemsIds: updatedList.itemsIds,
-      },
-    },
-  });
+  res.send(list[0]);
 }
