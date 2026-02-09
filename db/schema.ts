@@ -1,5 +1,5 @@
 import { sql, relations } from 'drizzle-orm';
-import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { index, integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
 export const lists = sqliteTable('lists_table', {
   id: integer('id').primaryKey({ autoIncrement: true }),
@@ -13,14 +13,18 @@ export const lists = sqliteTable('lists_table', {
     .notNull(),
 });
 
-export const items = sqliteTable('items_table', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  text: text('text').notNull(),
-  checked: integer('checked', { mode: 'boolean' }).notNull().default(false),
-  listId: integer('list_id')
-    .notNull()
-    .references(() => lists.id, { onDelete: 'cascade' }),
-});
+export const items = sqliteTable(
+  'items_table',
+  {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    text: text('text').notNull(),
+    checked: integer('checked', { mode: 'boolean' }).notNull().default(false),
+    listId: integer('list_id')
+      .notNull()
+      .references(() => lists.id, { onDelete: 'cascade' }),
+  },
+  (table) => [index('items_list_id_idx').on(table.listId)],
+);
 
 export const listsRelations = relations(lists, ({ many }) => {
   return {
