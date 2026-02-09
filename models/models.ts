@@ -1,9 +1,13 @@
 import type { InferSelectModel } from 'drizzle-orm';
-import type { listsTable, itemsTable } from '../db/schema.ts';
+import type { lists, items } from '../db/schema.ts';
 import type { Request, Response } from 'express';
 
-export type List = InferSelectModel<typeof listsTable>;
-export type Item = InferSelectModel<typeof itemsTable>;
+export type List = InferSelectModel<typeof lists>;
+export type Item = InferSelectModel<typeof items>;
+
+export type ListWithItems = List & {
+  items: Item[];
+};
 
 export type ListCreateRequestBody = Pick<List, 'title'>;
 export type ListUpdateRequestBody = Pick<List, 'id' | 'title'>;

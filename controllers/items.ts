@@ -1,6 +1,6 @@
 import { eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/libsql';
-import { itemsTable } from '../db/schema.ts';
+import { items } from '../db/schema.ts';
 import type {
   ItemCreateRequest,
   ItemDeleteRequest,
@@ -14,17 +14,17 @@ import type { Response } from 'express';
 const db = drizzle(process.env.DB_FILE_NAME!);
 
 export async function getItems(req: ItemsGetRequest, res: ItemsResponse) {
-  const items = await db
+  const allItems = await db
     .select()
-    .from(itemsTable)
-    .where(eq(itemsTable.listId, req.params.listId));
+    .from(items)
+    .where(eq(items.listId, req.params.listId));
 
-  res.send(items);
+  res.send(allItems);
 }
 
 export async function createItem(req: ItemCreateRequest, res: ItemResponse) {
   const item = await db
-    .insert(itemsTable)
+    .insert(items)
     .values({ listId: req.body.listId, text: req.body.text })
     .returning();
 
@@ -33,15 +33,15 @@ export async function createItem(req: ItemCreateRequest, res: ItemResponse) {
 
 export async function updateItem(req: ItemUpdateRequest, res: ItemResponse) {
   const item = await db
-    .update(itemsTable)
+    .update(items)
     .set({ text: req.body.text, checked: req.body.checked })
-    .where(eq(itemsTable.listId, req.body.listId))
+    .where(eq(items.listId, req.body.listId))
     .returning();
 
   res.send(item[0]);
 }
 
 export async function deleteItem(req: ItemDeleteRequest, res: Response) {
-  await db.delete(itemsTable).where(eq(itemsTable.id, req.params.id));
+  await db.delete(items).where(eq(items.id, req.params.id));
   res.status(204).send();
 }
