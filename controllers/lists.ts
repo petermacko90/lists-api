@@ -1,5 +1,4 @@
 import type { Request, Response } from 'express';
-import { drizzle } from 'drizzle-orm/libsql';
 import * as schema from '../db/schema.ts';
 import { eq } from 'drizzle-orm';
 import type {
@@ -9,40 +8,80 @@ import type {
   ListsResponse,
   ListUpdateRequest,
   ListWithItems,
-} from '../models/models.ts';
+} from '../models/lists.ts';
+import type { Database } from '../models/models.ts';
+import type { Logger } from 'winston';
 
-const db = drizzle(process.env.DB_FILE_NAME!, { schema });
+export async function getLists(
+  _req: Request,
+  res: ListsResponse,
+  db: Database,
+  logger: Logger,
+) {
+  try {
+    const listsWithItems: ListWithItems[] = await db.query.lists.findMany({
+      with: {
+        items: { limit: 5 },
+      },
+    });
 
-export async function getLists(_req: Request, res: ListsResponse) {
-  const listsWithItems: ListWithItems[] = await db.query.lists.findMany({
-    with: {
-      items: {},
-    },
-  });
-
-  res.send(listsWithItems);
+    res.send(listsWithItems);
+  } catch (err) {
+    logger.error(err);
+    res.status(500).send({ error: 'Internal server error' });
+  }
 }
 
-export async function createList(req: ListCreateRequest, res: ListResponse) {
-  const list = await db
-    .insert(schema.lists)
-    .values({ title: req.body.title })
-    .returning();
+export async function createList(
+  req: ListCreateRequest,
+  res: ListResponse,
+  db: Database,
+  logger: Logger,
+) {
+  try {
+    const list = await db
+      .insert(schema.lists)
+      .values({ title: req.body.title })
+      .returning();
 
-  res.send(list[0]);
+    res.send(list[0]);
+  } catch (err) {
+    logger.error(err);
+    res.status(500).send({ error: 'Internal server error' });
+  }
 }
 
-export async function updateList(req: ListUpdateRequest, res: ListResponse) {
+export async function updateList(
+  req: ListUpdateRequest,
+  res: ListResponse,
+  db: Database,
+) {
   const list = await db
     .update(schema.lists)
     .set({ title: req.body.title })
     .where(eq(schema.lists.id, req.body.id))
     .returning();
 
-  res.send(list[0]);
+  if (list.length === 0) {
+    res.status(404).send({ error: 'List not found' });
+  } else {
+    res.send(list[0]);
+  }
 }
 
-export async function deleteList(req: ListDeleteRequest, res: Response) {
-  await db.delete(schema.lists).where(eq(schema.lists.id, req.params.id));
-  res.status(204).send();
+export async function deleteList(
+  req: ListDeleteRequest,
+  res: Response,
+  db: Database,
+) {
+  const list = await db
+    .delete(schema.lists)
+    .where(eq(schema.lists.id, req.params.id))
+    .returning();
+
+  if (list.length === 0) {
+    res.status(404).send({ error: 'List not found' });
+  } else {
+    res.status(204).send();
+  }
 }

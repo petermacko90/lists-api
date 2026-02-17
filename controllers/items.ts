@@ -1,5 +1,4 @@
 import { eq } from 'drizzle-orm';
-import { drizzle } from 'drizzle-orm/libsql';
 import { items } from '../db/schema.ts';
 import type {
   ItemCreateRequest,
@@ -8,12 +7,15 @@ import type {
   ItemsGetRequest,
   ItemsResponse,
   ItemUpdateRequest,
-} from '../models/models.ts';
+} from '../models/items.ts';
 import type { Response } from 'express';
+import type { Database } from '../models/models.ts';
 
-const db = drizzle(process.env.DB_FILE_NAME!);
-
-export async function getItems(req: ItemsGetRequest, res: ItemsResponse) {
+export async function getItems(
+  req: ItemsGetRequest,
+  res: ItemsResponse,
+  db: Database,
+) {
   const allItems = await db
     .select()
     .from(items)
@@ -22,7 +24,11 @@ export async function getItems(req: ItemsGetRequest, res: ItemsResponse) {
   res.send(allItems);
 }
 
-export async function createItem(req: ItemCreateRequest, res: ItemResponse) {
+export async function createItem(
+  req: ItemCreateRequest,
+  res: ItemResponse,
+  db: Database,
+) {
   const item = await db
     .insert(items)
     .values({ listId: req.body.listId, text: req.body.text })
@@ -31,7 +37,11 @@ export async function createItem(req: ItemCreateRequest, res: ItemResponse) {
   res.send(item[0]);
 }
 
-export async function updateItem(req: ItemUpdateRequest, res: ItemResponse) {
+export async function updateItem(
+  req: ItemUpdateRequest,
+  res: ItemResponse,
+  db: Database,
+) {
   const item = await db
     .update(items)
     .set({ text: req.body.text, checked: req.body.checked })
@@ -41,7 +51,11 @@ export async function updateItem(req: ItemUpdateRequest, res: ItemResponse) {
   res.send(item[0]);
 }
 
-export async function deleteItem(req: ItemDeleteRequest, res: Response) {
+export async function deleteItem(
+  req: ItemDeleteRequest,
+  res: Response,
+  db: Database,
+) {
   await db.delete(items).where(eq(items.id, req.params.id));
   res.status(204).send();
 }
