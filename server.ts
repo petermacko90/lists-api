@@ -64,35 +64,35 @@ app.post(listsPath, async (req: ListCreateRequest, res: ListResponse) => {
 });
 
 app.put(listsPath, async (req: ListUpdateRequest, res: ListResponse) => {
-  updateList(req, res, db);
+  updateList(req, res, db, logger);
 });
 
 app.delete(
   `${listsPath}/:id`,
   async (req: ListDeleteRequest, res: Response) => {
-    deleteList(req, res, db);
+    deleteList(req, res, db, logger);
   },
 );
 
 app.get(
   `${itemsPath}/:listId`,
   async (req: ItemsGetRequest, res: ItemsResponse) => {
-    getItems(req, res, db);
+    getItems(req, res, db, logger);
   },
 );
 
 app.post(itemsPath, async (req: ItemCreateRequest, res: ItemResponse) => {
-  createItem(req, res, db);
+  createItem(req, res, db, logger);
 });
 
 app.put(itemsPath, async (req: ItemUpdateRequest, res: ItemResponse) => {
-  updateItem(req, res, db);
+  updateItem(req, res, db, logger);
 });
 
 app.delete(
   `${itemsPath}/:id`,
   async (req: ItemDeleteRequest, res: Response) => {
-    deleteItem(req, res, db);
+    deleteItem(req, res, db, logger);
   },
 );
 

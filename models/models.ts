@@ -6,4 +6,4 @@ export type Database = LibSQLDatabase<typeof schema> & {
   $client: Client;
 };
 
-export type Error = { error: string };
+export type ErrorResponse = { error: string };

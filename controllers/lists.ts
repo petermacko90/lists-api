@@ -11,6 +11,7 @@ import type {
 } from '../models/lists.ts';
 import type { Database } from '../models/models.ts';
 import type { Logger } from 'winston';
+import { INTERNAL_SERVER_ERROR, LIST_NOT_FOUND } from '../messages/messages.ts';
 
 export async function getLists(
   _req: Request,
@@ -28,7 +29,7 @@ export async function getLists(
     res.send(listsWithItems);
   } catch (err) {
     logger.error(err);
-    res.status(500).send({ error: 'Internal server error' });
+    res.status(500).send({ error: INTERNAL_SERVER_ERROR });
   }
 }
 
@@ -47,7 +48,7 @@ export async function createList(
     res.send(list[0]);
   } catch (err) {
     logger.error(err);
-    res.status(500).send({ error: 'Internal server error' });
+    res.status(500).send({ error: INTERNAL_SERVER_ERROR });
   }
 }
 
@@ -55,17 +56,23 @@ export async function updateList(
   req: ListUpdateRequest,
   res: ListResponse,
   db: Database,
+  logger: Logger,
 ) {
-  const list = await db
-    .update(schema.lists)
-    .set({ title: req.body.title })
-    .where(eq(schema.lists.id, req.body.id))
-    .returning();
+  try {
+    const list = await db
+      .update(schema.lists)
+      .set({ title: req.body.title })
+      .where(eq(schema.lists.id, req.body.id))
+      .returning();
 
-  if (list.length === 0) {
-    res.status(404).send({ error: 'List not found' });
-  } else {
-    res.send(list[0]);
+    if (list.length === 0) {
+      res.status(404).send({ error: LIST_NOT_FOUND });
+    } else {
+      res.send(list[0]);
+    }
+  } catch (err) {
+    logger.error(err);
+    res.status(500).send({ error: INTERNAL_SERVER_ERROR });
   }
 }
 
@@ -73,15 +80,21 @@ export async function deleteList(
   req: ListDeleteRequest,
   res: Response,
   db: Database,
+  logger: Logger,
 ) {
-  const list = await db
-    .delete(schema.lists)
-    .where(eq(schema.lists.id, req.params.id))
-    .returning();
+  try {
+    const list = await db
+      .delete(schema.lists)
+      .where(eq(schema.lists.id, req.params.id))
+      .returning();
 
-  if (list.length === 0) {
-    res.status(404).send({ error: 'List not found' });
-  } else {
-    res.status(204).send();
+    if (list.length === 0) {
+      res.status(404).send({ error: LIST_NOT_FOUND });
+    } else {
+      res.status(204).send();
+    }
+  } catch (err) {
+    logger.error(err);
+    res.status(500).send({ error: INTERNAL_SERVER_ERROR });
   }
 }
