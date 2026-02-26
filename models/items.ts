@@ -7,7 +7,10 @@ export type Item = InferSelectModel<typeof items>;
 
 export type ItemsGetRequestParams = Pick<Item, 'listId'>;
 export type ItemCreateRequestBody = Pick<Item, 'listId' | 'text'>;
-export type ItemUpdateRequestBody = Item;
+export type ItemUpdateRequestBody = Pick<
+  Item,
+  'listId' | 'id' | 'text' | 'checked'
+>;
 export type ItemDeleteRequestParams = Pick<Item, 'id'>;
 
 export type ItemsGetRequest = Request<ItemsGetRequestParams>;

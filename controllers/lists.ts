@@ -22,7 +22,7 @@ export async function getLists(
   try {
     const listsWithItems: ListWithItems[] = await db.query.lists.findMany({
       with: {
-        items: { limit: 5 },
+        items: {},
       },
     });
 
